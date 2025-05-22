@@ -7,10 +7,50 @@ import dayjs from "dayjs";
 import {
   Day,
   getEventsByDayRegion,
-  getRegionStatus,
   StatusEmoji,
-  TIME_REGIONS,
+  REGIONS,
+  DayRegion,
 } from "./event-parsing";
+
+const getRegionNotes = (
+  region: DayRegion,
+  day: Day,
+  options: { showEvents: boolean }
+) => {
+  const notes = region.events.map((event) => {
+    let startFormat = event.boundedEnd.isBefore(day.startOfDay)
+      ? "h:mm a(Do)"
+      : "h:mm a";
+    let endFormat = event.boundedEnd.isAfter(day.endOfDay)
+      ? "h:mm a(Do)"
+      : "h:mm a";
+
+    return `${region.name} ${event.boundedStart.format(
+      startFormat
+    )}-${event.boundedEnd.format(endFormat)}${
+      options.showEvents ? `[${event.event.summary}]` : ""
+    }`;
+  });
+  return notes;
+};
+
+export const getRegionStatus = (
+  region: DayRegion,
+  day: Day,
+  statusOptions: { showEvents: boolean }
+) => {
+  const percentRemaining =
+    (region.remaining.asMilliseconds() / region.total.asMilliseconds()) * 100;
+  const notes = getRegionNotes(region, day, statusOptions);
+
+  if (percentRemaining === 100) {
+    return { emoji: region.emoji, notes };
+  } else if (percentRemaining >= 50) {
+    return { emoji: StatusEmoji.NOT_SURE, notes };
+  } else {
+    return { emoji: StatusEmoji.BUSY, notes };
+  }
+};
 
 const googleCalendar = new ApiGoogleCalendar();
 
@@ -90,7 +130,7 @@ function App() {
             onChange={(evt) => setShowEvents(evt.target.checked)}
           />
           <pre>
-            {TIME_REGIONS.map((region) => (
+            {REGIONS.map((region) => (
               <>
                 {region.emoji} = {region.name} Free{"\n"}
               </>
