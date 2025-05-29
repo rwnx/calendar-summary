@@ -12,7 +12,7 @@ import {
   DayRegion,
 } from "./event-parsing";
 
-const getRegionNotes = (
+const getEventDetailsByRegion = (
   region: DayRegion,
   day: Day,
   options: { showEvents: boolean }
@@ -41,7 +41,7 @@ export const getRegionStatus = (
 ) => {
   const percentRemaining =
     (region.remaining.asMilliseconds() / region.total.asMilliseconds()) * 100;
-  const notes = getRegionNotes(region, day, statusOptions);
+  const notes = getEventDetailsByRegion(region, day, statusOptions);
 
   if (percentRemaining === 100) {
     return { emoji: region.emoji, notes };
