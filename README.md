@@ -1,8 +1,8 @@
-# Calendar summary
-prints a summary of what you're doing in the next two weeks
-![Screenshot](./screenshot.png)
+# \*-Tools
+Does something helpful
 
-## TODO:
-* Recurring event handling
-* multiple calendar handling
-* publish app in google console
+## Development
+```sh
+npm i
+npm run dev
+```

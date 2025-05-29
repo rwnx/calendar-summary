@@ -1,0 +1,10 @@
+@keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .spinner {
+    display: inline-block;
+    animation: spin 2s linear infinite;
+    font-size: 1rem;
+    line-height: 0.5rem;
+  }

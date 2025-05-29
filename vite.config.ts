@@ -3,8 +3,9 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { z } from "zod";
 
+// !! Add your .env validation here
 export const envSchema = z.object({
-  VITE_GOOGLE_CLIENT_ID: z.string().min(1),
+  VITE_TITLE: z.string().min(1),
 });
 export type Env = z.infer<typeof envSchema>;
 
