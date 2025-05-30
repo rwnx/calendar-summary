@@ -1,11 +1,13 @@
 /// <reference types="vite/client" />
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { z } from "zod";
 
 // !! Add your .env validation here
 export const envSchema = z.object({
-  VITE_TITLE: z.string().min(1),
+  VITE_CLIENT_ID: z.string().min(1),
+  VITE_REDIRECT_URI: z.string().url(),
 });
 export type Env = z.infer<typeof envSchema>;
 
@@ -18,9 +20,11 @@ declare global {
 }
 
 export default defineConfig(({ mode }) => {
+  let env: Env;
   try {
-    envSchema.parse(loadEnv(mode, process.cwd(), ""));
+    env = envSchema.parse(loadEnv(mode, process.cwd(), ""));
   } catch (error) {
+    // batch errors
     if (error instanceof z.ZodError) {
       const errors = error.errors.map((err) => ({
         path: err.path.join("."),
@@ -34,7 +38,10 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
+    server: {
+      allowedHosts: [new URL(env.VITE_REDIRECT_URI).host],
+    },
     // ... other configurations
   };
 });
