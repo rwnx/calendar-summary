@@ -4,7 +4,7 @@ import { getEventsByDayRegion } from "./event-parsing";
 import type { CalendarEvent } from "./api";
 import { factory, later } from "@factory-js/factory";
 
-const eventFactory = factory
+const CalendarEventFactory = factory
   .define<CalendarEvent>({
     props: {
       kind: () => "calendar#event",
@@ -41,20 +41,18 @@ const eventFactory = factory
       (await props.start).add(faker.number.int({ min: 1, max: 4 }), "hours"),
   });
 
-describe("event parsing", () => {
+describe("getEventsByDayRegion", () => {
   const testDate = dayjs("2025-06-06").startOf("day");
 
   describe("when an event occupies 50% of a region", () => {
-    it("should mark that region as busy", () => {
+    it("should mark that region as busy", async () => {
       const events = [
-        eventFactory
-          .props({
-            id: () => "1",
-            summary: () => "Test Event",
-            start: () => testDate.add(6, "hours"), // 6am
-            end: () => testDate.add(9, "hours"), // 9am (3 hours)
-          })
-          .build(),
+        await CalendarEventFactory.props({
+          id: () => "1",
+          summary: () => "Test Event",
+          start: () => testDate.add(6, "hours"), // 6am
+          end: () => testDate.add(9, "hours"), // 9am (3 hours)
+        }).build(),
       ];
 
       const result = getEventsByDayRegion(events);
@@ -65,20 +63,20 @@ describe("event parsing", () => {
   });
 
   describe("when multiple events occupy 50% of a region", () => {
-    it("should mark that region as busy", () => {
+    it("should mark that region as busy", async () => {
       const events = [
-        createTestEvent({
-          id: "1",
-          summary: "Event 1",
-          start: testDate.add(6, "hours"), // 6am
-          end: testDate.add(8, "hours"), // 8am
-        }),
-        createTestEvent({
-          id: "2",
-          summary: "Event 2",
-          start: testDate.add(8, "hours"), // 8am
-          end: testDate.add(11, "hours"), // 11am
-        }),
+        await CalendarEventFactory.props({
+          id: () => "1",
+          summary: () => "Event 1",
+          start: () => testDate.add(6, "hours"), // 6am
+          end: () => testDate.add(8, "hours"), // 8am
+        }).build(),
+        await CalendarEventFactory.props({
+          id: () => "2",
+          summary: () => "Event 2",
+          start: () => testDate.add(8, "hours"), // 8am
+          end: () => testDate.add(11, "hours"), // 11am
+        }).build(),
       ];
 
       const result = getEventsByDayRegion(events);
@@ -89,14 +87,14 @@ describe("event parsing", () => {
   });
 
   describe("when an event overlaps multiple regions", () => {
-    it("should repeat that event across multiple regions", () => {
+    it("should repeat that event across multiple regions", async () => {
       const events = [
-        createTestEvent({
-          id: "1",
-          summary: "Long Event",
-          start: testDate.add(11, "hours"), // 11am
-          end: testDate.add(14, "hours"), // 2pm (spans am/pm regions)
-        }),
+        await CalendarEventFactory.props({
+          id: () => "1",
+          summary: () => "Long Event",
+          start: () => testDate.add(11, "hours"), // 11am
+          end: () => testDate.add(14, "hours"), // 2pm (spans am/pm regions)
+        }).build(),
       ];
 
       const result = getEventsByDayRegion(events);
@@ -111,15 +109,15 @@ describe("event parsing", () => {
   });
 
   describe("when a recurring event is returned", () => {
-    it("should calculate the correct region based on the recurring event, not the original event", () => {
+    it("should calculate the correct region based on the recurring event, not the original event", async () => {
       const events = [
-        createTestEvent({
-          id: "1",
-          summary: "Recurring Event",
-          start: testDate.add(16, "hours"), // 4pm
-          end: testDate.add(17, "hours"), // 5pm
-          recurrence: ["RRULE:FREQ=DAILY;COUNT=2"],
-        }),
+        await CalendarEventFactory.props({
+          id: () => "1",
+          summary: () => "Recurring Event",
+          start: () => testDate.add(16, "hours"), // 4pm
+          end: () => testDate.add(17, "hours"), // 5pm
+          recurrence: () => ["RRULE:FREQ=DAILY;COUNT=2"],
+        }).build(),
       ];
 
       const result = getEventsByDayRegion(events);
@@ -132,14 +130,14 @@ describe("event parsing", () => {
   });
 
   describe("when events make up 0-50% of a region", () => {
-    it("should mark the region as not sure", () => {
+    it("should mark the region as not sure", async () => {
       const events = [
-        createTestEvent({
-          id: "1",
-          summary: "Short Event",
-          start: testDate.add(12, "hours"), // 12pm
-          end: testDate.add(12, "hours").add(30, "minutes"), // 12:30pm
-        }),
+        await CalendarEventFactory.props({
+          id: () => "1",
+          summary: () => "Short Event",
+          start: () => testDate.add(12, "hours"), // 12pm
+          end: () => testDate.add(12, "hours").add(30, "minutes"), // 12:30pm
+        }).build(),
       ];
 
       const result = getEventsByDayRegion(events);
@@ -152,14 +150,14 @@ describe("event parsing", () => {
   });
 
   describe("when an event extends beyond the end of a region", () => {
-    it("the end of the event should be set to the end of the region", () => {
+    it("the end of the event should be set to the end of the region", async () => {
       const events = [
-        createTestEvent({
-          id: "1",
-          summary: "Overflow Event",
-          start: testDate.add(22, "hours"), // 10pm
-          end: testDate.add(26, "hours"), // 2am next day
-        }),
+        await CalendarEventFactory.props({
+          id: () => "1",
+          summary: () => "Overflow Event",
+          start: () => testDate.add(22, "hours"), // 10pm
+          end: () => testDate.add(26, "hours"), // 2am next day
+        }).build(),
       ];
 
       const result = getEventsByDayRegion(events);
@@ -170,14 +168,14 @@ describe("event parsing", () => {
   });
 
   describe("when an event starts before the start of a region", () => {
-    it("should set the start of the event to the start of the region", () => {
+    it("should set the start of the event to the start of the region", async () => {
       const events = [
-        createTestEvent({
-          id: "1",
-          summary: "Early Event",
-          start: testDate.add(4, "hours"), // 4am
-          end: testDate.add(8, "hours"), // 8am
-        }),
+        await CalendarEventFactory.props({
+          id: () => "1",
+          summary: () => "Early Event",
+          start: () => testDate.add(4, "hours"), // 4am
+          end: () => testDate.add(8, "hours"), // 8am
+        }).build(),
       ];
 
       const result = getEventsByDayRegion(events);
@@ -190,20 +188,20 @@ describe("event parsing", () => {
   });
 
   describe("when multiple events overlap the same time", () => {
-    it("the remaining time should reflect consumed time once", () => {
+    it("the remaining time should reflect consumed time once", async () => {
       const events = [
-        createTestEvent({
-          id: "1",
-          summary: "Overlap 1",
-          start: testDate.add(13, "hours"), // 1pm
-          end: testDate.add(15, "hours"), // 3pm
-        }),
-        createTestEvent({
-          id: "2",
-          summary: "Overlap 2",
-          start: testDate.add(14, "hours"), // 2pm
-          end: testDate.add(16, "hours"), // 4pm
-        }),
+        await CalendarEventFactory.props({
+          id: () => "1",
+          summary: () => "Overlap 1",
+          start: () => testDate.add(13, "hours"), // 1pm
+          end: () => testDate.add(15, "hours"), // 3pm
+        }).build(),
+        await CalendarEventFactory.props({
+          id: () => "2",
+          summary: () => "Overlap 2",
+          start: () => testDate.add(14, "hours"), // 2pm
+          end: () => testDate.add(16, "hours"), // 4pm
+        }).build(),
       ];
 
       const result = getEventsByDayRegion(events);

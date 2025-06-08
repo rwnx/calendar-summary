@@ -1,4 +1,5 @@
 import dayjs, { Dayjs } from "dayjs";
+import "./dayjs-extensions";
 import { Duration } from "dayjs/plugin/duration";
 import { CalendarEvent } from "./api";
 import { sortByAccessor, mergeDefaults } from "./utils";
@@ -96,11 +97,13 @@ const createEmptyDay = (daysFromNow: number): Day => {
 export const getEventsByDayRegion = (
   events: CalendarEvent[],
   optionsInput?: {
-    days?: number;
+    startDate?: Dayjs;
+    endDate?: Dayjs;
   }
 ): Day[] => {
   const options = mergeDefaults(optionsInput, {
-    days: 14,
+    start: today,
+    end: today.add(14, "days"),
   });
 
   const emptyDays = Array.from({ length: options.days! }, (_, i) =>
