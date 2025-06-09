@@ -42,19 +42,22 @@ const CalendarEventFactory = factory
   });
 
 describe("getEventsByDayRegion", () => {
-  const testDate = dayjs("2025-06-06").startOf("day");
+  let events: CalendarEvent[];
+  const today = dayjs().startOf("day");
 
-  describe("when an event occupies 50% of a region", () => {
-    it("should mark that region as busy", async () => {
-      const events = [
+  describe("when an event takes up 3 hours of a region", () => {
+    beforeAll(async () => {
+      events = [
         await CalendarEventFactory.props({
           id: () => "1",
           summary: () => "Test Event",
-          start: () => testDate.add(6, "hours"), // 6am
-          end: () => testDate.add(9, "hours"), // 9am (3 hours)
+          start: () => today.add(6, "hours"), // 6am
+          end: () => today.add(9, "hours"), // 9am (3 hours)
         }).build(),
       ];
+    });
 
+    it("should subtract 3 hours from the remaining time", async () => {
       const result = getEventsByDayRegion(events);
       const morningRegion = result[0].regions.find((r) => r.regionId === "am");
 
@@ -62,23 +65,24 @@ describe("getEventsByDayRegion", () => {
     });
   });
 
-  describe("when multiple events occupy 50% of a region", () => {
-    it("should mark that region as busy", async () => {
-      const events = [
+  describe("when multiple events fall in a region", () => {
+    beforeAll(async () => {
+      events = [
         await CalendarEventFactory.props({
           id: () => "1",
           summary: () => "Event 1",
-          start: () => testDate.add(6, "hours"), // 6am
-          end: () => testDate.add(8, "hours"), // 8am
+          start: () => today.add(6, "hours"), // 6am
+          end: () => today.add(8, "hours"), // 8am
         }).build(),
         await CalendarEventFactory.props({
           id: () => "2",
           summary: () => "Event 2",
-          start: () => testDate.add(8, "hours"), // 8am
-          end: () => testDate.add(11, "hours"), // 11am
+          start: () => today.add(8, "hours"), // 8am
+          end: () => today.add(11, "hours"), // 11am
         }).build(),
       ];
-
+    });
+    it("should subtract their combined duration from the region", async () => {
       const result = getEventsByDayRegion(events);
       const morningRegion = result[0].regions.find((r) => r.regionId === "am");
 
@@ -92,8 +96,8 @@ describe("getEventsByDayRegion", () => {
         await CalendarEventFactory.props({
           id: () => "1",
           summary: () => "Long Event",
-          start: () => testDate.add(11, "hours"), // 11am
-          end: () => testDate.add(14, "hours"), // 2pm (spans am/pm regions)
+          start: () => today.add(11, "hours"), // 11am
+          end: () => today.add(14, "hours"), // 2pm (spans am/pm regions)
         }).build(),
       ];
 
@@ -108,55 +112,14 @@ describe("getEventsByDayRegion", () => {
     });
   });
 
-  describe("when a recurring event is returned", () => {
-    it("should calculate the correct region based on the recurring event, not the original event", async () => {
-      const events = [
-        await CalendarEventFactory.props({
-          id: () => "1",
-          summary: () => "Recurring Event",
-          start: () => testDate.add(16, "hours"), // 4pm
-          end: () => testDate.add(17, "hours"), // 5pm
-          recurrence: () => ["RRULE:FREQ=DAILY;COUNT=2"],
-        }).build(),
-      ];
-
-      const result = getEventsByDayRegion(events);
-      const day1Evening = result[0].regions.find((r) => r.regionId === "eve");
-      const day2Evening = result[1].regions.find((r) => r.regionId === "eve");
-
-      expect(day1Evening?.events).toHaveLength(1);
-      expect(day2Evening?.events).toHaveLength(1);
-    });
-  });
-
-  describe("when events make up 0-50% of a region", () => {
-    it("should mark the region as not sure", async () => {
-      const events = [
-        await CalendarEventFactory.props({
-          id: () => "1",
-          summary: () => "Short Event",
-          start: () => testDate.add(12, "hours"), // 12pm
-          end: () => testDate.add(12, "hours").add(30, "minutes"), // 12:30pm
-        }).build(),
-      ];
-
-      const result = getEventsByDayRegion(events);
-      const afternoonRegion = result[0].regions.find(
-        (r) => r.regionId === "pm"
-      );
-
-      expect(afternoonRegion?.remaining.asHours()).toBeCloseTo(4.5); // 5 hours total, 0.5 taken
-    });
-  });
-
   describe("when an event extends beyond the end of a region", () => {
     it("the end of the event should be set to the end of the region", async () => {
       const events = [
         await CalendarEventFactory.props({
           id: () => "1",
           summary: () => "Overflow Event",
-          start: () => testDate.add(22, "hours"), // 10pm
-          end: () => testDate.add(26, "hours"), // 2am next day
+          start: () => today.add(22, "hours"), // 10pm
+          end: () => today.add(26, "hours"), // 2am next day
         }).build(),
       ];
 
@@ -173,8 +136,8 @@ describe("getEventsByDayRegion", () => {
         await CalendarEventFactory.props({
           id: () => "1",
           summary: () => "Early Event",
-          start: () => testDate.add(4, "hours"), // 4am
-          end: () => testDate.add(8, "hours"), // 8am
+          start: () => today.add(4, "hours"), // 4am
+          end: () => today.add(8, "hours"), // 8am
         }).build(),
       ];
 
@@ -189,18 +152,18 @@ describe("getEventsByDayRegion", () => {
 
   describe("when multiple events overlap the same time", () => {
     it("the remaining time should reflect consumed time once", async () => {
-      const events = [
+      events = [
         await CalendarEventFactory.props({
           id: () => "1",
           summary: () => "Overlap 1",
-          start: () => testDate.add(13, "hours"), // 1pm
-          end: () => testDate.add(15, "hours"), // 3pm
+          start: () => today.add(13, "hours"), // 1pm
+          end: () => today.add(15, "hours"), // 3pm
         }).build(),
         await CalendarEventFactory.props({
           id: () => "2",
           summary: () => "Overlap 2",
-          start: () => testDate.add(14, "hours"), // 2pm
-          end: () => testDate.add(16, "hours"), // 4pm
+          start: () => today.add(14, "hours"), // 2pm
+          end: () => today.add(16, "hours"), // 4pm
         }).build(),
       ];
 

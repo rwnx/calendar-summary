@@ -94,21 +94,8 @@ const createEmptyDay = (daysFromNow: number): Day => {
   };
 };
 
-export const getEventsByDayRegion = (
-  events: CalendarEvent[],
-  optionsInput?: {
-    startDate?: Dayjs;
-    endDate?: Dayjs;
-  }
-): Day[] => {
-  const options = mergeDefaults(optionsInput, {
-    start: today,
-    end: today.add(14, "days"),
-  });
-
-  const emptyDays = Array.from({ length: options.days! }, (_, i) =>
-    createEmptyDay(i)
-  );
+export const getEventsByDayRegion = (events: CalendarEvent[]): Day[] => {
+  const emptyDays = Array.from({ length: 14 }, (_, i) => createEmptyDay(i));
   events.sort(sortByAccessor((x) => x.start.unix()));
 
   return events.reduce((days: Day[], event: CalendarEvent): Day[] => {
@@ -116,8 +103,7 @@ export const getEventsByDayRegion = (
       const dayRegions = day.regions.map((region): DayRegion => {
         const startsInRegion = event.start.isBetween(region.start, region.end);
         const endsInRegion = event.end.isBetween(region.start, region.end);
-        // no overlap - exit
-        // TODO: recurring events
+
         if (!startsInRegion && !endsInRegion) {
           return region;
         }
@@ -128,9 +114,16 @@ export const getEventsByDayRegion = (
 
         const boundedDuration = dayjs.duration(boundedEnd.diff(boundedStart));
 
-        // check for overlap from previous events and remove this from the effective duration
+        // check for overlap with previous events and calculate the unique duration
         const effectiveDuration = region.events.reduce((prev, cur) => {
-          return prev.subtract(cur.boundedDuration);
+          const overlapStart = dayjs.max(boundedStart, cur.boundedStart);
+          const overlapEnd = dayjs.min(boundedEnd, cur.boundedEnd);
+          const overlap = dayjs.duration(overlapEnd.diff(overlapStart));
+
+          if (overlap.asMilliseconds() > 0) {
+            return prev.subtract(overlap);
+          }
+          return prev;
         }, boundedDuration);
 
         const nextEvent: DayRegionEvent = {
