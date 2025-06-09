@@ -4,13 +4,8 @@ import "./App.css";
 import { useQuery } from "@tanstack/react-query";
 import { ApiGoogleCalendar } from "./api";
 import dayjs from "dayjs";
-import {
-  Day,
-  getEventsByDayRegion,
-  StatusEmoji,
-  REGIONS,
-  DayRegion,
-} from "./event-parsing";
+import { Day, getEventsByDayRegion, DayRegion } from "./event-parsing";
+import { REGIONS, StatusEmoji } from "./constants";
 
 const getEventDetailsByRegion = (
   region: DayRegion,

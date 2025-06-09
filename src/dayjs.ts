@@ -1,5 +1,5 @@
 // dayjs extensions
-import dayjs from "dayjs";
+import * as dayjs from "dayjs";
 
 import duration from "dayjs/plugin/duration";
 import isBetween from "dayjs/plugin/isBetween";
@@ -14,3 +14,5 @@ dayjs.extend(timezone);
 dayjs.extend(duration);
 dayjs.extend(isBetween);
 dayjs.extend(minMax);
+
+export default dayjs;

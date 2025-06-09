@@ -1,27 +1,26 @@
 import { useState, useEffect } from "react";
 import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
+import { TOKEN_STORAGE_KEY } from "./constants";
 
 interface TokenData {
   access_token: string;
   expires_at: number;
 }
 
-export const STORAGE_KEY = "googleTokenData";
-
 export function useAuth() {
   const [tokenData, setTokenData] = useState<TokenData | null>(() => {
-    const storedToken = localStorage.getItem(STORAGE_KEY);
+    const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!storedToken) return null;
 
     try {
       const parsed = JSON.parse(storedToken) as TokenData;
       if (parsed.expires_at < Date.now()) {
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
         return null;
       }
       return parsed;
     } catch {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
       return null;
     }
   });
@@ -39,7 +38,7 @@ export function useAuth() {
     onError: (errorResponse) => {
       console.error("Login Failed:", errorResponse);
       setError("Login failed. Please try again.");
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
     },
     scope: "https://www.googleapis.com/auth/calendar.readonly",
   });
@@ -51,9 +50,9 @@ export function useAuth() {
   // Store token in localStorage when it changes
   useEffect(() => {
     if (tokenData) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tokenData));
+      localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
     } else {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
     }
   }, [tokenData]);
 

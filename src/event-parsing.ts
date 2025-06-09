@@ -1,16 +1,9 @@
 import dayjs, { Dayjs } from "dayjs";
-import "./dayjs-extensions";
+import "./dayjs";
 import { Duration } from "dayjs/plugin/duration";
 import { CalendarEvent } from "./api";
 import { sortByAccessor, mergeDefaults } from "./utils";
-
-export type RegionDefinition = {
-  id: string;
-  name: string;
-  emoji: string;
-  start: Duration;
-  end: Duration;
-};
+import { REGIONS } from "./constants";
 
 export type DayRegionEvent = {
   dayId: string;
@@ -41,35 +34,6 @@ export type Day = {
   endOfDay: Dayjs;
   regions: DayRegion[];
 };
-
-export const REGIONS: RegionDefinition[] = [
-  {
-    id: "am",
-    name: "Morning",
-    start: dayjs.duration({ hours: 6 }),
-    end: dayjs.duration({ hours: 12 }),
-    emoji: "🌞",
-  },
-  {
-    id: "pm",
-    name: "Afternoon",
-    start: dayjs.duration({ hours: 12 }),
-    end: dayjs.duration({ hours: 17 }),
-    emoji: "⛅",
-  },
-  {
-    id: "eve",
-    name: "Evening",
-    start: dayjs.duration({ hours: 17 }),
-    end: dayjs.duration({ hours: 24 }),
-    emoji: "✨",
-  },
-];
-
-export enum StatusEmoji {
-  NOT_SURE = "⚠️",
-  BUSY = "🚫",
-}
 
 // Helper functions
 const createEmptyDay = (daysFromNow: number): Day => {
