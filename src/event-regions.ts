@@ -1,6 +1,4 @@
-import dayjs, { Dayjs } from "dayjs";
-import "./dayjs";
-import { Duration } from "dayjs/plugin/duration";
+import dayjs, { Dayjs, Duration } from "./dayjs";
 import { CalendarEvent } from "./api";
 import { sortByAccessor, mergeDefaults } from "./utils";
 import { REGIONS } from "./constants";

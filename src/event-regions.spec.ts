@@ -1,6 +1,6 @@
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "./dayjs";
 import { faker } from "@faker-js/faker";
-import { getEventsByDayRegion } from "./event-parsing";
+import { getEventsByDayRegion } from "./event-regions";
 import type { CalendarEvent } from "./api";
 import { factory, later } from "@factory-js/factory";
 

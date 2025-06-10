@@ -4,7 +4,7 @@ import "./App.css";
 import { useQuery } from "@tanstack/react-query";
 import { ApiGoogleCalendar } from "./api";
 import dayjs from "dayjs";
-import { Day, getEventsByDayRegion, DayRegion } from "./event-parsing";
+import { Day, getEventsByDayRegion, DayRegion } from "./event-regions";
 import { REGIONS, StatusEmoji } from "./constants";
 
 const getEventDetailsByRegion = (
@@ -126,10 +126,8 @@ function App() {
           />
           <pre>
             {REGIONS.map((region) => (
-              <>
-                {region.emoji} = {region.name} Free{"\n"}
-              </>
-            ))}
+                `${region.emoji} = ${region.name} Free`
+            )).join("\n")}
             {StatusEmoji.NOT_SURE} = Not Sure{"\n"}
             {StatusEmoji.BUSY} = Busy
           </pre>

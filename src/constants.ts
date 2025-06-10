@@ -1,5 +1,4 @@
-import dayjs from "dayjs";
-import "./dayjs";
+import dayjs from "./dayjs";
 
 export const TOKEN_STORAGE_KEY = "googleTokenData";
 
