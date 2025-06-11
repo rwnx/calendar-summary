@@ -1,15 +1,7 @@
-import dayjs, { Dayjs } from "dayjs";
-import { Duration } from "dayjs/plugin/duration";
+import dayjs, { Dayjs, Duration } from "./dayjs";
 import { CalendarEvent } from "./api";
 import { sortByAccessor, mergeDefaults } from "./utils";
-
-export type RegionDefinition = {
-  id: string;
-  name: string;
-  emoji: string;
-  start: Duration;
-  end: Duration;
-};
+import { REGIONS } from "./constants";
 
 export type DayRegionEvent = {
   dayId: string;
@@ -41,35 +33,6 @@ export type Day = {
   regions: DayRegion[];
 };
 
-export const REGIONS: RegionDefinition[] = [
-  {
-    id: "am",
-    name: "Morning",
-    start: dayjs.duration({ hours: 6 }),
-    end: dayjs.duration({ hours: 12 }),
-    emoji: "🌞",
-  },
-  {
-    id: "pm",
-    name: "Afternoon",
-    start: dayjs.duration({ hours: 12 }),
-    end: dayjs.duration({ hours: 17 }),
-    emoji: "⛅",
-  },
-  {
-    id: "eve",
-    name: "Evening",
-    start: dayjs.duration({ hours: 17 }),
-    end: dayjs.duration({ hours: 24 }),
-    emoji: "✨",
-  },
-];
-
-export enum StatusEmoji {
-  NOT_SURE = "⚠️",
-  BUSY = "🚫",
-}
-
 // Helper functions
 const createEmptyDay = (daysFromNow: number): Day => {
   const startOfDay = dayjs().add(daysFromNow, "day").startOf("day");
@@ -93,19 +56,8 @@ const createEmptyDay = (daysFromNow: number): Day => {
   };
 };
 
-export const getEventsByDayRegion = (
-  events: CalendarEvent[],
-  optionsInput?: {
-    days?: number;
-  }
-): Day[] => {
-  const options = mergeDefaults(optionsInput, {
-    days: 14,
-  });
-
-  const emptyDays = Array.from({ length: options.days! }, (_, i) =>
-    createEmptyDay(i)
-  );
+export const getEventsByDayRegion = (events: CalendarEvent[]): Day[] => {
+  const emptyDays = Array.from({ length: 14 }, (_, i) => createEmptyDay(i));
   events.sort(sortByAccessor((x) => x.start.unix()));
 
   return events.reduce((days: Day[], event: CalendarEvent): Day[] => {
@@ -113,8 +65,7 @@ export const getEventsByDayRegion = (
       const dayRegions = day.regions.map((region): DayRegion => {
         const startsInRegion = event.start.isBetween(region.start, region.end);
         const endsInRegion = event.end.isBetween(region.start, region.end);
-        // no overlap - exit
-        // TODO: recurring events
+
         if (!startsInRegion && !endsInRegion) {
           return region;
         }
@@ -125,9 +76,16 @@ export const getEventsByDayRegion = (
 
         const boundedDuration = dayjs.duration(boundedEnd.diff(boundedStart));
 
-        // check for overlap from previous events and remove this from the effective duration
+        // check for overlap with previous events and calculate the unique duration
         const effectiveDuration = region.events.reduce((prev, cur) => {
-          return prev.subtract(cur.boundedDuration);
+          const overlapStart = dayjs.max(boundedStart, cur.boundedStart);
+          const overlapEnd = dayjs.min(boundedEnd, cur.boundedEnd);
+          const overlap = dayjs.duration(overlapEnd.diff(overlapStart));
+
+          if (overlap.asMilliseconds() > 0) {
+            return prev.subtract(overlap);
+          }
+          return prev;
         }, boundedDuration);
 
         const nextEvent: DayRegionEvent = {

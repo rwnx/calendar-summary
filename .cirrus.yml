@@ -1,0 +1,29 @@
+
+jest_task:
+  container:
+    image: node:22.16.0 # sync with .nvmrc
+  node_modules_cache:
+    folder: node_modules
+    fingerprint_script: echo $CIRRUS_OS && node --version && cat package-lock.json
+    populate_script: 
+      - npm ci
+  upload_caches:
+    - node_modules
+  script:
+    - npm test
+
+playwright_task:
+  container:
+    image: mcr.microsoft.com/playwright:v1.52.0-noble
+    entrypoint: /bin/bash
+  playwright_node_modules_cache:
+    folder: node_modules
+    fingerprint_script: echo $CIRRUS_OS && node --version && cat package-lock.json
+    populate_script: 
+      - npm ci
+  upload_caches:
+    - playwright_node_modules
+  script:
+    - npm run test:e2e
+  trace_artifact:
+    path: "playwright-report/*"
