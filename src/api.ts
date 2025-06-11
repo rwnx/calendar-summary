@@ -1,7 +1,7 @@
 import axios from "axios";
-import dayjs from "dayjs";
+import dayjs from "@/dayjs";
 import { z, ZodSchema } from "zod";
-import { mergeDefaults } from "./utils";
+import { mergeDefaults } from "@/utils";
 
 const CalendarDateTime = z.object({
   dateTime: z.string(),

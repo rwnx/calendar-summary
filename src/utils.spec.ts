@@ -1,4 +1,4 @@
-import { mergeDefaults, multiSort, sortByAccessor } from "./utils";
+import { mergeDefaults, multiSort, sortByAccessor } from "@/utils";
 
 describe("mergeDefaults", () => {
   it("merges simple objects with defaults", () => {

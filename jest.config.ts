@@ -2,7 +2,6 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
@@ -15,7 +14,10 @@ export default {
   },
   testMatch: [
     '**/__tests__/**/*.[jt]s?(x)',
-    '**/?(*.)+(spec|test).[jt]s?(x)'
+    '**/?(*.)+(spec|test).[jt]s?(x)',
+  ],
+  testPathIgnorePatterns: [
+    "e2e/.+"
   ],
   collectCoverage: true,
   coverageDirectory: 'coverage',
