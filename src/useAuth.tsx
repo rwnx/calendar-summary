@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
-import { TOKEN_STORAGE_KEY } from "./constants";
+import { TOKEN_STORAGE_KEY } from "@/constants";
 
 interface TokenData {
   access_token: string;

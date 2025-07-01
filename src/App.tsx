@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useAuth } from "./useAuth";
-import "./App.css";
+import { useAuth } from "@/useAuth";
+import "@/App.css";
 import { useQuery } from "@tanstack/react-query";
-import { ApiGoogleCalendar } from "./api";
-import dayjs from "dayjs";
-import { Day, getEventsByDayRegion, DayRegion } from "./event-regions";
-import { REGIONS, StatusEmoji } from "./constants";
+import { ApiGoogleCalendar } from "@/api";
+import dayjs from "@/dayjs";
+import { Day, getEventsByDayRegion, DayRegion } from "@/event-regions";
+import { REGIONS, StatusEmoji } from "@/constants";
 
 const getEventDetailsByRegion = (
   region: DayRegion,
@@ -85,18 +85,18 @@ function App() {
     x.startOfDay.isAfter(nextWeekEnd)
   );
 
-  const renderDay = (day: Day) => {
+  const renderDay = (day: Day, index: number) => {
     const regionStatuses = day.regions.map((dayRegion) =>
       getRegionStatus(dayRegion, day, { showEvents })
     );
     const allNotes = regionStatuses.flatMap((x) => x.notes).filter((x) => !!x);
     return (
-      <>
+      <li key={index} data-test-id={index}>
         {day.startOfDay.format("ddd Do")}
         {regionStatuses.map((r) => `${r.emoji}`).join("")}
         {allNotes.length > 0 && `\n  ${allNotes.join("\n  ")}`}
         {"\n"}
-      </>
+      </li>
     );
   };
 
@@ -134,22 +134,25 @@ function App() {
           {calendar.isLoading && <p>Loading calendar...</p>}
           {error && <p className="error">Error loading calendar: {error}</p>}
           <div className="summary">
-            <pre>
-              {thisWeekDays?.map((day) => renderDay(day))}
+            <ul>
+              {thisWeekDays?.map(renderDay)}
+              </ul>
 
-              {nextWeekDays && nextWeekDays?.length > 0 && (
-                <>
-                  {"\n"}Next Week{"\n"}
-                  {nextWeekDays?.map((day) => renderDay(day))}
-                </>
+              {nextWeekDays && nextWeekDays?.length > 0 && (<>
+              <h4>Next Week</h4>
+                <ul>
+                  {nextWeekDays?.map(renderDay)}
+                </ul>
+              </>
+
               )}
-              {beyondDays && beyondDays?.length > 0 && (
-                <>
-                  {"\n"}More{"\n"}
-                  {beyondDays?.map((day) => renderDay(day))}
-                </>
+              {beyondDays && beyondDays?.length > 0 && (<>
+                <h4>More</h4>
+                <ul> 
+                  {beyondDays?.map(renderDay)}
+                </ul>
+              </>
               )}
-            </pre>
           </div>
         </div>
       )}

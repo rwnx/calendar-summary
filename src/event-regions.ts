@@ -1,7 +1,7 @@
-import dayjs, { Dayjs, Duration } from "./dayjs";
-import { CalendarEvent } from "./api";
-import { sortByAccessor, mergeDefaults } from "./utils";
-import { REGIONS } from "./constants";
+import dayjs, { Dayjs, Duration } from "@/dayjs";
+import { CalendarEvent } from "@/api";
+import { sortByAccessor } from "@/utils";
+import { REGIONS } from "@/constants";
 
 export type DayRegionEvent = {
   dayId: string;

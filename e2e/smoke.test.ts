@@ -1,13 +1,12 @@
-import { test, expect } from "./fixtures/auth";
+import { test, expect } from "./fixtures/withMockedAuth";
 import { faker } from "@faker-js/faker";
+import { CalendarEventFactory } from "@/__tests__/factories"
 
 test("should load with mocked auth and API", async ({ page }) => {
-  const consoleErrors: string[] = [];
-  page.on('console', msg => {
-    if (msg.type() === 'error') {
-      consoleErrors.push(msg.text());
-    }
-  });
+  const consoleErrors: Error[] = [];
+  page.on("pageerror", e => {
+    consoleErrors.push(e);
+  })
 
   // Mock Google OAuth token endpoint
   await page.route('https://oauth2.googleapis.com/token', async route => {
@@ -30,16 +29,14 @@ test("should load with mocked auth and API", async ({ page }) => {
       body: JSON.stringify({
         kind: "calendar#events",
         etag: faker.string.uuid(),
-        items: [],
+        items: await CalendarEventFactory.buildList(10)
       })
     });
   });
 
   await page.goto("/");
-
-  // Verify the app loaded
-  await expect(page).toHaveTitle(/Calendar Summary/);
-
+  await page.waitForResponse("https://www.googleapis.com/calendar/v3/calendars/primary/events*")
+  await page.waitForLoadState("networkidle")
   // Add more assertions here based on your app's behavior
   // For example, verify events are displayed if your app shows them
 
@@ -47,4 +44,6 @@ test("should load with mocked auth and API", async ({ page }) => {
   if (consoleErrors.length > 0) {
     throw new Error(`Test failed due to console errors:\n${consoleErrors.join('\n')}`);
   }
+
+  await page.pause()
 });

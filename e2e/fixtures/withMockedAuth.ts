@@ -7,15 +7,16 @@ export const test = base.extend<{
   mockAuth: [
     async ({ page }, use) => {
       // Mock logged in state by setting localStorage
-      await page.addInitScript(() => {
+      await page.addInitScript((tokenKey) => {
         window.localStorage.setItem(
-          TOKEN_STORAGE_KEY,
+          tokenKey,
           JSON.stringify({
             access_token: "mock-access-token",
             expires_at: Date.now() + 3600 * 1000,
           })
         );
-      });
+      }, TOKEN_STORAGE_KEY);
+
       await use();
     },
     { auto: true },

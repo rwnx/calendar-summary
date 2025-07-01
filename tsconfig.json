@@ -20,6 +20,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "vite.config.ts"], // More explicit than exclude
   "exclude": ["node_modules", "dist"]
 }

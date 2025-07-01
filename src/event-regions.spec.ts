@@ -1,45 +1,6 @@
-import dayjs from "./dayjs";
-import { faker } from "@faker-js/faker";
-import { getEventsByDayRegion } from "./event-regions";
-import type { CalendarEvent } from "./api";
-import { factory, later } from "@factory-js/factory";
-
-const CalendarEventFactory = factory
-  .define<CalendarEvent>({
-    props: {
-      kind: () => "calendar#event",
-      id: () => faker.string.uuid(),
-      status: () => "confirmed",
-      etag: () => `${faker.string.uuid()}`,
-      htmlLink: () => faker.internet.url(),
-      created: () => dayjs(),
-      updated: () => dayjs(),
-      summary: () => faker.lorem.words(3),
-      description: () => faker.lorem.sentence(),
-      creator: () => ({
-        email: faker.internet.email(),
-        displayName: faker.person.fullName(),
-        self: true,
-      }),
-      organizer: () => ({
-        email: faker.internet.email(),
-        displayName: faker.person.fullName(),
-        self: true,
-      }),
-      start: () => dayjs(faker.date.soon()),
-      end: later<dayjs.Dayjs>(),
-      sequence: () => 0,
-      reminders: () => ({
-        useDefault: true,
-      }),
-      eventType: () => "default",
-    },
-    vars: {},
-  })
-  .props({
-    end: async ({ props }) =>
-      (await props.start).add(faker.number.int({ min: 1, max: 4 }), "hours"),
-  });
+import dayjs from "@/dayjs";
+import { getEventsByDayRegion } from "@/event-regions";
+import { CalendarEventFactory } from "@/__tests__/factories";
 
 describe("getEventsByDayRegion", () => {
   it("should subtract 3 hours from the remaining time when an event takes up 3 hours of a region", async () => {
