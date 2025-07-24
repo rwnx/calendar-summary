@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import axios, { Axios } from "axios";
 import dayjs, { Dayjs } from "dayjs";
-import pollFor from "p-wait-for";
 import queryString from "query-string";
 import { jwtDecode } from "jwt-decode";
 
@@ -106,11 +105,11 @@ export class Spotify {
   private status:
     | undefined
     | {
-        id: "authenticated";
-        createdAt: Dayjs;
-        updatedAt: Dayjs | undefined;
-        accessToken;
-      };
+      id: "authenticated";
+      createdAt: Dayjs;
+      updatedAt: Dayjs | undefined;
+      accessToken;
+    };
 
   setToken = (accessToken: createTokenResponse["access_token"]) => {
     if (this.status?.id == "authenticated") {
